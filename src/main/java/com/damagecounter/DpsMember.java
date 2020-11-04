@@ -38,12 +38,14 @@ class DpsMember
 	private Instant start;
 	private Instant end;
 	private int damage;
+	public static boolean overlayHide = true;
 
 	void addDamage(int amount)
 	{
 		if (start == null)
 		{
 			start = Instant.now();
+			overlayHide = false;
 		}
 
 		damage += amount;
@@ -69,11 +71,13 @@ class DpsMember
 	void reset()
 	{
 		damage = 0;
-		start = end = Instant.now();
+		start = null;
+		end = null;
+		overlayHide = true;
 	}
 
 	Duration elapsed()
 	{
-		return Duration.between(start, end == null ? Instant.now() : end);
+		return Duration.between(start == null ? Instant.now() : start, end == null ? Instant.now() : end);
 	}
 }

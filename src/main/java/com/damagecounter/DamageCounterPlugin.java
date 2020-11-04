@@ -279,7 +279,6 @@ public class DamageCounterPlugin extends Plugin
 		PartyMember localMember = partyService.getLocalMember();
 		// If not in a party, user local player name
 		final String name = localMember == null ? player.getName() : localMember.getName();
-		//boolean sendToChat = damageCounterConfig.sendToChat();
 		boolean sendToChat = damageCounterConfig.sendToChat();
 
 		for (DpsMember dpsMember : members.values())

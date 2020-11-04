@@ -26,4 +26,14 @@ public interface DamageCounterConfig extends Config
 	{
 		return true;
 	}
+
+	@ConfigItem(
+		keyName = "overlayAutoHide",
+		name = "Automatically hide overlay",
+		description = "Automatically hide the overlay when the boss dies"
+	)
+	default boolean overlayAutoHide()
+	{
+		return true;
+	}
 }

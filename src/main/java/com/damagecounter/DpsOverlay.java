@@ -93,7 +93,7 @@ class DpsOverlay extends OverlayPanel
 	public Dimension render(Graphics2D graphics)
 	{
 		Map<String, DpsMember> dpsMembers = damageCounterPlugin.getMembers();
-		if (dpsMembers.isEmpty())
+		if (dpsMembers.isEmpty() || (damageCounterConfig.overlayAutoHide() && DpsMember.overlayHide))
 		{
 			return null;
 		}
