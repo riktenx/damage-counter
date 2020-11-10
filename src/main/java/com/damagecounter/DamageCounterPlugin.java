@@ -28,6 +28,7 @@ package com.damagecounter;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Provides;
 import java.text.DecimalFormat;
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.inject.Inject;
@@ -281,6 +282,19 @@ public class DamageCounterPlugin extends Plugin
 		final String name = localMember == null ? player.getName() : localMember.getName();
 		boolean sendToChat = damageCounterConfig.sendToChat();
 
+		DpsMember total = getTotal();
+		Duration elapsed = total.elapsed();
+		long s = elapsed.getSeconds();
+		String killTime;
+		if (s >= 3600)
+		{
+			killTime = String.format("%dh %02dm %02ds", s / 3600, (s % 3600) / 60, (s % 60));
+		}
+		else
+		{
+			killTime = String.format("%dm %02ds", s / 60, (s % 60));
+		}
+
 		for (DpsMember dpsMember : members.values())
 		{
 			if (name.equals(dpsMember.getName()) && sendToChat)
@@ -289,7 +303,7 @@ public class DamageCounterPlugin extends Plugin
 				double damageTotal = total.getDamage();
 				double damagePercent = damageDone / damageTotal;
 				DecimalFormat df = new DecimalFormat("##%");
-				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Damage Counter: You dealt " + QuantityFormatter.formatNumber(dpsMember.getDamage()) + " (" + df.format(damagePercent) + ") damage to " + npcName, null);
+				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Damage Counter: You dealt " + QuantityFormatter.formatNumber(dpsMember.getDamage()) + " (" + df.format(damagePercent) + ") damage to " + npcName + " in " + killTime, null);
 			}
 
 			dpsMember.reset();
