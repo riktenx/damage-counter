@@ -36,4 +36,14 @@ public interface DamageCounterConfig extends Config
 	{
 		return true;
 	}
+
+	@ConfigItem(
+		keyName = "overlayHide",
+		name = "Always hide overlay",
+		description = "Always hide the overlay"
+	)
+	default boolean overlayHide()
+	{
+		return false;
+	}
 }
