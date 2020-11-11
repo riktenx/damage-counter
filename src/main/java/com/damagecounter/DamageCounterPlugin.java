@@ -125,7 +125,11 @@ public class DamageCounterPlugin extends Plugin
 		ICE_DEMON, ICE_DEMON_7585,
 		SKELETAL_MYSTIC, SKELETAL_MYSTIC_7605, SKELETAL_MYSTIC_7606
 	);
+	private static final ImmutableSet<Integer> BARROWS = ImmutableSet.of(
+		AHRIM_THE_BLIGHTED, DHAROK_THE_WRETCHED, GUTHAN_THE_INFESTED, KARIL_THE_TAINTED, TORAG_THE_CORRUPTED, VERAC_THE_DEFILED
+	);
 	private String npcName = null;
+	NPC barrows = null;
 
 	@Inject
 	private Client client;
@@ -191,6 +195,7 @@ public class DamageCounterPlugin extends Plugin
 		Hitsplat hitsplat = hitsplatApplied.getHitsplat();
 		final int npcId = ((NPC) actor).getId();
 		boolean isBoss = BOSSES.contains(npcId);
+		boolean isBarrows = BARROWS.contains(npcId);
 
 		if (!isBoss)
 		{
@@ -208,6 +213,12 @@ public class DamageCounterPlugin extends Plugin
 			DpsMember dpsMember = members.computeIfAbsent(name, DpsMember::new);
 			dpsMember.addDamage(hit);
 
+			// get the NPC and store it if we are attacking a barrows bro
+			if (isBarrows)
+			{
+				barrows = client.getHintArrowNpc();
+			}
+
 			// broadcast damage
 			if (localMember != null)
 			{
@@ -222,6 +233,11 @@ public class DamageCounterPlugin extends Plugin
 			if (actor != player.getInteracting())
 			{
 				// only track damage to npcs we are attacking, or is a nearby common boss
+				return;
+			}
+			else if (isBarrows)
+			{
+				// only track barrows bros we are attacking
 				return;
 			}
 			// apply to total
@@ -267,7 +283,7 @@ public class DamageCounterPlugin extends Plugin
 	{
 		NPC npc = npcDespawned.getNpc();
 
-		if (npc.isDead() && BOSSES.contains(npc.getId()))
+		if (npc.isDead() && BOSSES.contains(npc.getId()) && npc == barrows)
 		{
 			npcName = npc.getName();
 			reset();
@@ -281,6 +297,7 @@ public class DamageCounterPlugin extends Plugin
 		// If not in a party, user local player name
 		final String name = localMember == null ? player.getName() : localMember.getName();
 		boolean sendToChat = damageCounterConfig.sendToChat();
+		barrows = null;
 
 		DpsMember total = getTotal();
 		Duration elapsed = total.elapsed();

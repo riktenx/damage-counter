@@ -48,7 +48,7 @@ import net.runelite.client.ws.PartyService;
 class DpsOverlay extends OverlayPanel
 {
 	private static final DecimalFormat DPS_FORMAT = new DecimalFormat("#0.0");
-	private static final int PANEL_WIDTH_OFFSET = 10; // assumes 8 for panel component border + 2px between left and right
+	private static final int PANEL_WIDTH_OFFSET = 0; // switched to 0 from 10 to match the other overlays
 
 	static final OverlayMenuEntry RESET_ENTRY = new OverlayMenuEntry(RUNELITE_OVERLAY, "Reset", "DPS counter");
 
@@ -71,7 +71,7 @@ class DpsOverlay extends OverlayPanel
 		getMenuEntries().add(RESET_ENTRY);
 	}
 
-	@Override
+	/*@Override
 	public void onMouseOver()
 	{
 		DpsMember total = damageCounterPlugin.getTotal();
@@ -87,7 +87,7 @@ class DpsOverlay extends OverlayPanel
 			format = String.format("%d:%02d", s / 60, (s % 60));
 		}
 		tooltipManager.add(new Tooltip("Elapsed time: " + format));
-	}
+	}*/
 
 	@Override
 	public Dimension render(Graphics2D graphics)
@@ -131,17 +131,39 @@ class DpsOverlay extends OverlayPanel
 			if (player.getName() != null)
 			{
 				DpsMember self = dpsMembers.get(player.getName());
+				double damageDone = self.getDamage();
+				double damageTotal = total.getDamage();
+				double damagePercent = damageDone / damageTotal;
+				DecimalFormat df = new DecimalFormat("##%");
 
 				if (self != null && total.getDamage() > self.getDamage())
 				{
 					panelComponent.getChildren().add(
 						LineComponent.builder()
-							.left(total.getName())
+							.left(df.format(damagePercent))
 							.right(showDamage ? Integer.toString(total.getDamage()) : DPS_FORMAT.format(total.getDps()))
 							.build());
 				}
 			}
 		}
+
+		Duration elapsed = total.elapsed();
+		long s = elapsed.getSeconds();
+		String format;
+		if (s >= 3600)
+		{
+			format = String.format("%d:%02d:%02d", s / 3600, (s % 3600) / 60, (s % 60));
+		}
+		else
+		{
+			format = String.format("%d:%02d", s / 60, (s % 60));
+		}
+
+		panelComponent.getChildren().add(
+			LineComponent.builder()
+				.left("Elapsed time:")
+				.right(format)
+				.build());
 
 		return super.render(graphics);
 	}
