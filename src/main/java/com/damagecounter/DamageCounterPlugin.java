@@ -283,7 +283,7 @@ public class DamageCounterPlugin extends Plugin
 	{
 		NPC npc = npcDespawned.getNpc();
 
-		if (npc.isDead() && BOSSES.contains(npc.getId()) && npc == barrows)
+		if (npc.isDead() && (BOSSES.contains(npc.getId()) || npc == barrows))
 		{
 			npcName = npc.getName();
 			reset();
