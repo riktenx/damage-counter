@@ -67,7 +67,7 @@ public class DamageCounterPlugin extends Plugin
 	private static final ImmutableSet<Integer> BOSSES = ImmutableSet.of(
 		ABYSSAL_SIRE, ABYSSAL_SIRE_5887, ABYSSAL_SIRE_5888, ABYSSAL_SIRE_5889, ABYSSAL_SIRE_5890, ABYSSAL_SIRE_5891, ABYSSAL_SIRE_5908,
 		ALCHEMICAL_HYDRA, ALCHEMICAL_HYDRA_8616, ALCHEMICAL_HYDRA_8617, ALCHEMICAL_HYDRA_8618, ALCHEMICAL_HYDRA_8619, ALCHEMICAL_HYDRA_8620, ALCHEMICAL_HYDRA_8621, ALCHEMICAL_HYDRA_8622,
-		AHRIM_THE_BLIGHTED, DHAROK_THE_WRETCHED, GUTHAN_THE_INFESTED, KARIL_THE_TAINTED, TORAG_THE_CORRUPTED, VERAC_THE_DEFILED,
+		//AHRIM_THE_BLIGHTED, DHAROK_THE_WRETCHED, GUTHAN_THE_INFESTED, KARIL_THE_TAINTED, TORAG_THE_CORRUPTED, VERAC_THE_DEFILED,
 		BRYOPHYTA,
 		CALLISTO, CALLISTO_6609,
 		CERBERUS, CERBERUS_5863, CERBERUS_5866,
@@ -197,7 +197,7 @@ public class DamageCounterPlugin extends Plugin
 		boolean isBoss = BOSSES.contains(npcId);
 		boolean isBarrows = BARROWS.contains(npcId);
 
-		if (!isBoss)
+		if (!isBoss && !isBarrows)
 		{
 			// only track bosses
 			return;
@@ -320,7 +320,12 @@ public class DamageCounterPlugin extends Plugin
 				double damageTotal = total.getDamage();
 				double damagePercent = damageDone / damageTotal;
 				DecimalFormat df = new DecimalFormat("##%");
-				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Damage Counter: You dealt " + QuantityFormatter.formatNumber(dpsMember.getDamage()) + " (" + df.format(damagePercent) + ") damage to " + npcName + " in " + killTime, null);
+				if (damagePercent < 1)
+				{
+					client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "You dealt " + QuantityFormatter.formatNumber(dpsMember.getDamage()) + " (" + df.format(damagePercent) + ") damage to " + npcName + " in " + killTime, null);
+				} else {
+					client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "You dealt " + QuantityFormatter.formatNumber(dpsMember.getDamage()) + " damage to " + npcName + " in " + killTime, null);
+				}
 			}
 
 			dpsMember.reset();

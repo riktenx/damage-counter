@@ -145,7 +145,7 @@ class DpsOverlay extends OverlayPanel
 				{
 					panelComponent.getChildren().add(
 						LineComponent.builder()
-							.left(df.format(damagePercent))
+							.left(total.getName())
 							.right(showDamage ? Integer.toString(total.getDamage()) : DPS_FORMAT.format(total.getDps()))
 							.build());
 				}
