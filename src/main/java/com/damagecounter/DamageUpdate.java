@@ -31,7 +31,7 @@ import net.runelite.http.api.ws.messages.party.PartyMemberMessage;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
-public class DpsUpdate extends PartyMemberMessage
+public class DamageUpdate extends PartyMemberMessage
 {
 	private int hit;
 }

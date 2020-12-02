@@ -50,7 +50,6 @@ import net.runelite.client.events.PartyChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
-import net.runelite.client.ui.overlay.tooltip.TooltipManager;
 import net.runelite.client.util.QuantityFormatter;
 import net.runelite.client.ws.PartyMember;
 import net.runelite.client.ws.PartyService;
@@ -130,6 +129,7 @@ public class DamageCounterPlugin extends Plugin
 	);
 	private String npcName = null;
 	NPC barrows = null;
+	Actor boss = null;
 
 	@Inject
 	private Client client;
@@ -144,15 +144,15 @@ public class DamageCounterPlugin extends Plugin
 	private WSClient wsClient;
 
 	@Inject
-	private DpsOverlay dpsOverlay;
+	private DamageOverlay damageOverlay;
 
 	@Inject
 	private DamageCounterConfig damageCounterConfig;
 
 	@Getter(AccessLevel.PACKAGE)
-	private final Map<String, DpsMember> members = new ConcurrentHashMap<>();
+	private final Map<String, DamageMember> members = new ConcurrentHashMap<>();
 	@Getter(AccessLevel.PACKAGE)
-	private final DpsMember total = new DpsMember("Total");
+	private final DamageMember total = new DamageMember("Total");
 
 	@Provides
 	DamageCounterConfig provideConfig(ConfigManager configManager)
@@ -164,15 +164,15 @@ public class DamageCounterPlugin extends Plugin
 	protected void startUp()
 	{
 		total.reset();
-		overlayManager.add(dpsOverlay);
-		wsClient.registerMessage(DpsUpdate.class);
+		overlayManager.add(damageOverlay);
+		wsClient.registerMessage(DamageUpdate.class);
 	}
 
 	@Override
 	protected void shutDown()
 	{
-		wsClient.unregisterMessage(DpsUpdate.class);
-		overlayManager.remove(dpsOverlay);
+		wsClient.unregisterMessage(DamageUpdate.class);
+		overlayManager.remove(damageOverlay);
 		members.clear();
 	}
 
@@ -202,42 +202,47 @@ public class DamageCounterPlugin extends Plugin
 			// only track bosses
 			return;
 		}
+		else if (boss != null && actor != boss)
+		{
+			// only track the currently active boss
+			return;
+		}
 
-		if (hitsplat.isMine())
+		if (hitsplat.isMine() && (boss == null || boss == actor))
 		{
 			int hit = hitsplat.getAmount();
 			// Update local member
 			PartyMember localMember = partyService.getLocalMember();
 			// If not in a party, user local player name
 			final String name = localMember == null ? player.getName() : localMember.getName();
-			DpsMember dpsMember = members.computeIfAbsent(name, DpsMember::new);
-			dpsMember.addDamage(hit);
+			DamageMember damageMember = members.computeIfAbsent(name, DamageMember::new);
+			damageMember.addDamage(hit);
 
-			// get the NPC and store it if we are attacking a barrows bro
+			if (boss == null)
+			{
+				boss = actor;
+			}
+
 			if (isBarrows)
 			{
+				// get the NPC and store it if we are attacking a barrows brother
 				barrows = client.getHintArrowNpc();
 			}
 
 			// broadcast damage
 			if (localMember != null)
 			{
-				final DpsUpdate specialCounterUpdate = new DpsUpdate(hit);
+				final DamageUpdate specialCounterUpdate = new DamageUpdate(hit);
 				specialCounterUpdate.setMemberId(localMember.getMemberId());
 				wsClient.send(specialCounterUpdate);
 			}
 			// apply to total
 		}
-		else if (hitsplat.isOthers())
+		else if (hitsplat.isOthers() && boss == actor)
 		{
-			if (actor != player.getInteracting())
+			if (isBarrows)
 			{
-				// only track damage to npcs we are attacking, or is a nearby common boss
-				return;
-			}
-			else if (isBarrows)
-			{
-				// only track barrows bros we are attacking
+				// only track barrows brothers we are attacking
 				return;
 			}
 			// apply to total
@@ -251,31 +256,21 @@ public class DamageCounterPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onDpsUpdate(DpsUpdate dpsUpdate)
+	public void onDamageUpdate(DamageUpdate damageUpdate)
 	{
-		if (partyService.getLocalMember().getMemberId().equals(dpsUpdate.getMemberId()))
+		if (partyService.getLocalMember().getMemberId().equals(damageUpdate.getMemberId()))
 		{
 			return;
 		}
 
-		String name = partyService.getMemberById(dpsUpdate.getMemberId()).getName();
+		String name = partyService.getMemberById(damageUpdate.getMemberId()).getName();
 		if (name == null)
 		{
 			return;
 		}
 
-		DpsMember dpsMember = members.computeIfAbsent(name, DpsMember::new);
-		dpsMember.addDamage(dpsUpdate.getHit());
-	}
-
-	@Subscribe
-	public void onOverlayMenuClicked(OverlayMenuClicked event)
-	{
-		if (event.getEntry() == DpsOverlay.RESET_ENTRY)
-		{
-			members.clear();
-			total.reset();
-		}
+		DamageMember damageMember = members.computeIfAbsent(name, DamageMember::new);
+		damageMember.addDamage(damageUpdate.getHit());
 	}
 
 	@Subscribe
@@ -283,7 +278,7 @@ public class DamageCounterPlugin extends Plugin
 	{
 		NPC npc = npcDespawned.getNpc();
 
-		if (npc.isDead() && (BOSSES.contains(npc.getId()) || npc == barrows))
+		if (npc == boss)
 		{
 			npcName = npc.getName();
 			reset();
@@ -298,8 +293,9 @@ public class DamageCounterPlugin extends Plugin
 		final String name = localMember == null ? player.getName() : localMember.getName();
 		boolean sendToChat = damageCounterConfig.sendToChat();
 		barrows = null;
+		boss = null;
 
-		DpsMember total = getTotal();
+		DamageMember total = getTotal();
 		Duration elapsed = total.elapsed();
 		long s = elapsed.getSeconds();
 		String killTime;
@@ -312,23 +308,23 @@ public class DamageCounterPlugin extends Plugin
 			killTime = String.format("%dm %02ds", s / 60, (s % 60));
 		}
 
-		for (DpsMember dpsMember : members.values())
+		for (DamageMember damageMember : members.values())
 		{
-			if (name.equals(dpsMember.getName()) && sendToChat)
+			if (name.equals(damageMember.getName()) && sendToChat)
 			{
-				double damageDone = dpsMember.getDamage();
+				double damageDone = damageMember.getDamage();
 				double damageTotal = total.getDamage();
 				double damagePercent = damageDone / damageTotal;
 				DecimalFormat df = new DecimalFormat("##%");
 				if (damagePercent < 1)
 				{
-					client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "You dealt " + QuantityFormatter.formatNumber(dpsMember.getDamage()) + " (" + df.format(damagePercent) + ") damage to " + npcName + " in " + killTime, null);
+					client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "You dealt " + QuantityFormatter.formatNumber(damageMember.getDamage()) + " (" + df.format(damagePercent) + ") damage to " + npcName + " in " + killTime, null);
 				} else {
-					client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "You dealt " + QuantityFormatter.formatNumber(dpsMember.getDamage()) + " damage to " + npcName + " in " + killTime, null);
+					client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "You dealt " + QuantityFormatter.formatNumber(damageMember.getDamage()) + " damage to " + npcName + " in " + killTime, null);
 				}
 			}
 
-			dpsMember.reset();
+			damageMember.reset();
 		}
 
 		npcName = null;

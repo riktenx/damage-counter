@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-class DpsMember
+class DamageMember
 {
 	private final String name;
 	private Instant start;

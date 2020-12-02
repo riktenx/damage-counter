@@ -40,54 +40,29 @@ import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.components.ComponentConstants;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
-import net.runelite.client.ui.overlay.tooltip.Tooltip;
 import net.runelite.client.ui.overlay.tooltip.TooltipManager;
 import net.runelite.client.util.QuantityFormatter;
 import net.runelite.client.ws.PartyService;
 
-class DpsOverlay extends OverlayPanel
+class DamageOverlay extends OverlayPanel
 {
 	private static final DecimalFormat DPS_FORMAT = new DecimalFormat("#0.0");
 	private static final int PANEL_WIDTH_OFFSET = 0; // switched to 0 from 10 to match the other overlays
-
-	static final OverlayMenuEntry RESET_ENTRY = new OverlayMenuEntry(RUNELITE_OVERLAY, "Reset", "DPS counter");
 
 	private final DamageCounterPlugin damageCounterPlugin;
 	private final DamageCounterConfig damageCounterConfig;
 	private final PartyService partyService;
 	private final Client client;
-	private final TooltipManager tooltipManager;
 
 	@Inject
-	DpsOverlay(DamageCounterPlugin damageCounterPlugin, DamageCounterConfig damageCounterConfig, PartyService partyService, Client client,
-			   TooltipManager tooltipManager)
+	DamageOverlay(DamageCounterPlugin damageCounterPlugin, DamageCounterConfig damageCounterConfig, PartyService partyService, Client client)
 	{
 		super(damageCounterPlugin);
 		this.damageCounterPlugin = damageCounterPlugin;
 		this.damageCounterConfig = damageCounterConfig;
 		this.partyService = partyService;
 		this.client = client;
-		this.tooltipManager = tooltipManager;
-		getMenuEntries().add(RESET_ENTRY);
 	}
-
-	/*@Override
-	public void onMouseOver()
-	{
-		DpsMember total = damageCounterPlugin.getTotal();
-		Duration elapsed = total.elapsed();
-		long s = elapsed.getSeconds();
-		String format;
-		if (s >= 3600)
-		{
-			format = String.format("%d:%02d:%02d", s / 3600, (s % 3600) / 60, (s % 60));
-		}
-		else
-		{
-			format = String.format("%d:%02d", s / 60, (s % 60));
-		}
-		tooltipManager.add(new Tooltip("Elapsed time: " + format));
-	}*/
 
 	@Override
 	public Dimension render(Graphics2D graphics)
@@ -97,17 +72,17 @@ class DpsOverlay extends OverlayPanel
 			return null;
 		}
 
-		Map<String, DpsMember> dpsMembers = damageCounterPlugin.getMembers();
-		if (dpsMembers.isEmpty() || (damageCounterConfig.overlayAutoHide() && DpsMember.overlayHide))
+		Map<String, DamageMember> dpsMembers = damageCounterPlugin.getMembers();
+		if (dpsMembers.isEmpty() || (damageCounterConfig.overlayAutoHide() && DamageMember.overlayHide))
 		{
 			return null;
 		}
 
 		boolean inParty = !partyService.getMembers().isEmpty();
 		boolean showDamage = damageCounterConfig.showDamage();
-		DpsMember total = damageCounterPlugin.getTotal();
+		DamageMember total = damageCounterPlugin.getTotal();
 
-		final String title = (inParty ? "Party " : "") + (showDamage ? "Damage" : "DPS");
+		final String title = "Damage Counter";
 		panelComponent.getChildren().add(
 			TitleComponent.builder()
 				.text(title)
@@ -116,10 +91,10 @@ class DpsOverlay extends OverlayPanel
 		int maxWidth = ComponentConstants.STANDARD_WIDTH;
 		FontMetrics fontMetrics = graphics.getFontMetrics();
 
-		for (DpsMember dpsMember : dpsMembers.values())
+		for (DamageMember damageMember : dpsMembers.values())
 		{
-			String left = dpsMember.getName();
-			String right = showDamage ? QuantityFormatter.formatNumber(dpsMember.getDamage()) : DPS_FORMAT.format(dpsMember.getDps());
+			String left = damageMember.getName();
+			String right = showDamage ? QuantityFormatter.formatNumber(damageMember.getDamage()) : DPS_FORMAT.format(damageMember.getDps());
 			maxWidth = Math.max(maxWidth, fontMetrics.stringWidth(left) + fontMetrics.stringWidth(right));
 			panelComponent.getChildren().add(
 				LineComponent.builder()
@@ -135,7 +110,7 @@ class DpsOverlay extends OverlayPanel
 			Player player = client.getLocalPlayer();
 			if (player.getName() != null)
 			{
-				DpsMember self = dpsMembers.get(player.getName());
+				DamageMember self = dpsMembers.get(player.getName());
 				double damageDone = self.getDamage();
 				double damageTotal = total.getDamage();
 				double damagePercent = damageDone / damageTotal;
