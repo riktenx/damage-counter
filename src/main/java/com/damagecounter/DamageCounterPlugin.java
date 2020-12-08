@@ -29,6 +29,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.inject.Provides;
 import java.text.DecimalFormat;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.inject.Inject;
@@ -45,12 +47,15 @@ import net.runelite.api.events.HitsplatApplied;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.OverlayMenuClicked;
 import net.runelite.client.events.PartyChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.QuantityFormatter;
+import net.runelite.client.util.Text;
+import net.runelite.client.util.WildcardMatcher;
 import net.runelite.client.ws.PartyMember;
 import net.runelite.client.ws.PartyService;
 import net.runelite.client.ws.WSClient;
@@ -149,6 +154,8 @@ public class DamageCounterPlugin extends Plugin
 	@Inject
 	private DamageCounterConfig damageCounterConfig;
 
+	private List<String> additionalNpcs;
+
 	@Getter(AccessLevel.PACKAGE)
 	private final Map<String, DamageMember> members = new ConcurrentHashMap<>();
 	@Getter(AccessLevel.PACKAGE)
@@ -166,6 +173,7 @@ public class DamageCounterPlugin extends Plugin
 		total.reset();
 		overlayManager.add(damageOverlay);
 		wsClient.registerMessage(DamageUpdate.class);
+		additionalNpcs = Collections.emptyList();
 	}
 
 	@Override
@@ -174,6 +182,16 @@ public class DamageCounterPlugin extends Plugin
 		wsClient.unregisterMessage(DamageUpdate.class);
 		overlayManager.remove(damageOverlay);
 		members.clear();
+	}
+
+	@Subscribe
+	public void onConfigChanged(ConfigChanged configChanged)
+	{
+		if (configChanged.getGroup().equalsIgnoreCase(DamageCounterConfig.GROUP))
+		{
+			String s = damageCounterConfig.additionalNpcs();
+			additionalNpcs = s != null ? Text.fromCSV(s) : Collections.emptyList();
+		}
 	}
 
 	@Subscribe
@@ -196,10 +214,23 @@ public class DamageCounterPlugin extends Plugin
 		final int npcId = ((NPC) actor).getId();
 		boolean isBoss = BOSSES.contains(npcId);
 		boolean isBarrows = BARROWS.contains(npcId);
+		boolean isAdditionalNpc = false;
 
-		if (!isBoss && !isBarrows)
+		// Check for user inputted NPC
+		if (!additionalNpcs.isEmpty())
 		{
-			// only track bosses
+			for (String npcName : additionalNpcs)
+			{
+				if (WildcardMatcher.matches(npcName, actor.getName()))
+				{
+					isAdditionalNpc = true;
+				}
+			}
+		}
+
+		if (!isBoss && !isBarrows && !isAdditionalNpc)
+		{
+			// only track bosses or user inputted NPC
 			return;
 		}
 

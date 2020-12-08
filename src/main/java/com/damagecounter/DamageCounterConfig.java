@@ -4,9 +4,11 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
-@ConfigGroup("damagecounter")
+@ConfigGroup(DamageCounterConfig.GROUP)
 public interface DamageCounterConfig extends Config
 {
+	String GROUP = "damageCounter";
+
 	@ConfigItem(
 		keyName = "sendToChat",
 		name = "Display in chat log",
@@ -46,4 +48,11 @@ public interface DamageCounterConfig extends Config
 	{
 		return false;
 	}
+
+	@ConfigItem(
+		keyName = "additionalNpcs",
+		name = "Additional NPCs",
+		description = "Also track these NPCs, comma separated"
+	)
+	String additionalNpcs();
 }
