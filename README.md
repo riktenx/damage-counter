@@ -13,6 +13,7 @@ Useful when bossing with other players.
 - Chat log message on boss death, detailing your damage, total damage, percentage and kill time (togglable)
 - Option to display either total damage done or DPS
 - Option to automatically hide overlay when boss dies
+- Option to add your own NPCs to be tracked by Name
 - Shows other user's damage, if they are in a party with you
 
 ## Changelog
@@ -21,6 +22,7 @@ Useful when bossing with other players.
 - Counter now automatically resets when engaging combat with a different boss
 - Counter will no longer automatically reset when teleporting/running away from boss
 - Counter will still automatically reset when boss dies
+- Extra config option added to allow custom NPCs to be tracked by name
 
 ###### v1.4.4 - 08-Dec-2020
 - Bugfix for Giant Mole
