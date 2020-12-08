@@ -17,6 +17,11 @@ Useful when bossing with other players.
 
 ## Changelog
 
+###### v1.5.0 - 09-Dec-2020
+- Counter now automatically resets when engaging combat with a different boss
+- Counter will no longer automatically reset when teleporting/running away from boss
+- Counter will still automatically reset when boss dies
+
 ###### v1.4.4 - 08-Dec-2020
 - Bugfix for Giant Mole
 

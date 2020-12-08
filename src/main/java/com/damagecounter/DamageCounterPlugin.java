@@ -129,7 +129,7 @@ public class DamageCounterPlugin extends Plugin
 	);
 	private String npcName = null;
 	NPC barrows = null;
-	Actor boss = null;
+	int boss = 0;
 
 	@Inject
 	private Client client;
@@ -202,13 +202,8 @@ public class DamageCounterPlugin extends Plugin
 			// only track bosses
 			return;
 		}
-		else if (boss != null && actor != boss)
-		{
-			// only track the currently active boss
-			return;
-		}
 
-		if (hitsplat.isMine() && (boss == null || boss == actor))
+		if (hitsplat.isMine())
 		{
 			int hit = hitsplat.getAmount();
 			// Update local member
@@ -218,9 +213,14 @@ public class DamageCounterPlugin extends Plugin
 			DamageMember damageMember = members.computeIfAbsent(name, DamageMember::new);
 			damageMember.addDamage(hit);
 
-			if (boss == null)
+			if (boss == 0)
 			{
-				boss = actor;
+				boss = npcId;
+				npcName = actor.getName();
+			}
+			else if (boss != npcId)
+			{
+				reset();
 			}
 
 			if (isBarrows)
@@ -238,7 +238,7 @@ public class DamageCounterPlugin extends Plugin
 			}
 			// apply to total
 		}
-		else if (hitsplat.isOthers() && boss == actor)
+		else if (hitsplat.isOthers() && boss == npcId)
 		{
 			if (isBarrows)
 			{
@@ -246,10 +246,6 @@ public class DamageCounterPlugin extends Plugin
 				return;
 			}
 			// apply to total
-		}
-		else
-		{
-			return;
 		}
 
 		total.addDamage(hitsplat.getAmount());
@@ -278,12 +274,15 @@ public class DamageCounterPlugin extends Plugin
 	{
 		NPC npc = npcDespawned.getNpc();
 
-		if (npc == boss)
+		if (npc.isDead() && npc.getId() == boss)
 		{
-			if (npc.getId() == GIANT_MOLE && npc.getAnimation() == 3314)
+			if (barrows != null)
 			{
-				// If giant mole has dug, don't reset
-				return;
+				// Only track our own barrows brother
+				if (npc != barrows)
+				{
+					return;
+				}
 			}
 
 			npcName = npc.getName();
@@ -299,7 +298,7 @@ public class DamageCounterPlugin extends Plugin
 		final String name = localMember == null ? player.getName() : localMember.getName();
 		boolean sendToChat = damageCounterConfig.sendToChat();
 		barrows = null;
-		boss = null;
+		boss = 0;
 
 		DamageMember total = getTotal();
 		Duration elapsed = total.elapsed();
