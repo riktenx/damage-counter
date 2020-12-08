@@ -17,6 +17,9 @@ Useful when bossing with other players.
 
 ## Changelog
 
+###### v1.4.4 - 08-Dec-2020
+- Bugfix for Giant Mole
+
 ###### v1.4.3 - 03-Dec-2020
 - Bugfix for conflicting class names
 - Counter will now reset if you run away or teleport from combat

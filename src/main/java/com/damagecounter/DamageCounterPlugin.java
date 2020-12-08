@@ -280,6 +280,12 @@ public class DamageCounterPlugin extends Plugin
 
 		if (npc == boss)
 		{
+			if (npc.getId() == GIANT_MOLE && npc.getAnimation() == 3314)
+			{
+				// If giant mole has dug, don't reset
+				return;
+			}
+
 			npcName = npc.getName();
 			reset();
 		}
