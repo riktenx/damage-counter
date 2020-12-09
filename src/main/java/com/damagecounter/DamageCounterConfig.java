@@ -4,11 +4,9 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
-@ConfigGroup(DamageCounterConfig.GROUP)
+@ConfigGroup("damagecounter")
 public interface DamageCounterConfig extends Config
 {
-	String GROUP = "damageCounter";
-
 	@ConfigItem(
 		keyName = "sendToChat",
 		name = "Display in chat log",

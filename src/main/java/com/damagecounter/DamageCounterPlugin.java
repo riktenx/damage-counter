@@ -187,7 +187,7 @@ public class DamageCounterPlugin extends Plugin
 	@Subscribe
 	public void onConfigChanged(ConfigChanged configChanged)
 	{
-		if (configChanged.getGroup().equalsIgnoreCase(DamageCounterConfig.GROUP))
+		if (configChanged.getGroup().equals("damagecounter"))
 		{
 			String s = damageCounterConfig.additionalNpcs();
 			additionalNpcs = s != null ? Text.fromCSV(s) : Collections.emptyList();
