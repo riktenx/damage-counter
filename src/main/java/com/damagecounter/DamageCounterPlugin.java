@@ -27,6 +27,7 @@ package com.damagecounter;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Provides;
+import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.util.Collections;
@@ -52,7 +53,11 @@ import net.runelite.client.events.OverlayMenuClicked;
 import net.runelite.client.events.PartyChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.info.InfoPanel;
+import net.runelite.client.ui.ClientToolbar;
+import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.QuantityFormatter;
 import net.runelite.client.util.Text;
 import net.runelite.client.util.WildcardMatcher;
@@ -154,6 +159,10 @@ public class DamageCounterPlugin extends Plugin
 	@Inject
 	private DamageCounterConfig damageCounterConfig;
 
+	@Inject
+	private ClientToolbar clientToolbar;
+
+	private NavigationButton navButton;
 	private List<String> additionalNpcs;
 
 	@Getter(AccessLevel.PACKAGE)
@@ -174,6 +183,20 @@ public class DamageCounterPlugin extends Plugin
 		overlayManager.add(damageOverlay);
 		wsClient.registerMessage(DamageUpdate.class);
 		additionalNpcs = Collections.emptyList();
+
+		final DamageCounterPanel panel = injector.getInstance(DamageCounterPanel.class);
+		panel.init();
+
+		final BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "damagecounter_icon.png");
+
+		navButton = NavigationButton.builder()
+			.tooltip("Damage Counter")
+			.icon(icon)
+			.priority(10)
+			.panel(panel)
+			.build();
+
+		clientToolbar.addNavigation(navButton);
 	}
 
 	@Override
@@ -182,6 +205,7 @@ public class DamageCounterPlugin extends Plugin
 		wsClient.unregisterMessage(DamageUpdate.class);
 		overlayManager.remove(damageOverlay);
 		members.clear();
+		clientToolbar.removeNavigation(navButton);
 	}
 
 	@Subscribe
