@@ -18,6 +18,9 @@ Useful when bossing with other players.
 
 ## Changelog
 
+###### v1.7 - 20-Jul-2022
+- Refactored the plugin to make it work with the new Party plugin
+
 ###### v1.6 - 17-Jan-2021
 - Added side panel (to be expanded upon soon)
 

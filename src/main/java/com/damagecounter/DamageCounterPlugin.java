@@ -51,6 +51,9 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.OverlayMenuClicked;
 import net.runelite.client.events.PartyChanged;
+import net.runelite.client.party.PartyMember;
+import net.runelite.client.party.PartyService;
+import net.runelite.client.party.WSClient;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.info.InfoPanel;
@@ -61,9 +64,7 @@ import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.QuantityFormatter;
 import net.runelite.client.util.Text;
 import net.runelite.client.util.WildcardMatcher;
-import net.runelite.client.ws.PartyMember;
-import net.runelite.client.ws.PartyService;
-import net.runelite.client.ws.WSClient;
+
 import net.runelite.api.ChatMessageType;
 
 @PluginDescriptor(
@@ -264,7 +265,7 @@ public class DamageCounterPlugin extends Plugin
 			// Update local member
 			PartyMember localMember = partyService.getLocalMember();
 			// If not in a party, user local player name
-			final String name = localMember == null ? player.getName() : localMember.getName();
+			final String name = localMember == null ? player.getName() : localMember.getDisplayName();
 			DamageMember damageMember = members.computeIfAbsent(name, DamageMember::new);
 			damageMember.addDamage(hit);
 
@@ -289,7 +290,7 @@ public class DamageCounterPlugin extends Plugin
 			{
 				final DamageUpdate specialCounterUpdate = new DamageUpdate(hit);
 				specialCounterUpdate.setMemberId(localMember.getMemberId());
-				wsClient.send(specialCounterUpdate);
+				partyService.send(specialCounterUpdate);
 			}
 			// apply to total
 		}
@@ -309,12 +310,12 @@ public class DamageCounterPlugin extends Plugin
 	@Subscribe
 	public void onDamageUpdate(DamageUpdate damageUpdate)
 	{
-		if (partyService.getLocalMember().getMemberId().equals(damageUpdate.getMemberId()))
+		if (partyService.getLocalMember().getMemberId() == damageUpdate.getMemberId())
 		{
 			return;
 		}
 
-		String name = partyService.getMemberById(damageUpdate.getMemberId()).getName();
+		String name = partyService.getMemberById(damageUpdate.getMemberId()).getDisplayName();
 		if (name == null)
 		{
 			return;
@@ -350,7 +351,7 @@ public class DamageCounterPlugin extends Plugin
 		Player player = client.getLocalPlayer();
 		PartyMember localMember = partyService.getLocalMember();
 		// If not in a party, user local player name
-		final String name = localMember == null ? player.getName() : localMember.getName();
+		final String name = localMember == null ? player.getName() : localMember.getDisplayName();
 		boolean sendToChat = damageCounterConfig.sendToChat();
 		barrows = null;
 		boss = 0;
