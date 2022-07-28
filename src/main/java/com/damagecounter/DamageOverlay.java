@@ -95,8 +95,8 @@ class DamageOverlay extends OverlayPanel
 
 		int maxWidth = ComponentConstants.STANDARD_WIDTH;
 		FontMetrics fontMetrics = graphics.getFontMetrics();
-//////////////////////////////
-        // Logic for creating a sorted set of players and damage in party.
+
+		// Logic for creating a sorted set of players and damage in party.
 		TreeMap<Integer,String> damageDoneSorted = new TreeMap<Integer,String>();
 		for (DamageMember damageMember : dpsMembers.values())
 		{
@@ -105,19 +105,16 @@ class DamageOverlay extends OverlayPanel
 			damageDoneSorted.put(right,left);
 		}
 		NavigableMap descedingValuesMap = damageDoneSorted.descendingMap();
-		Set finalSet = descedingValuesMap.entrySet();
-
-        // Conditional to sort damage list in descending order.
+		Set descendingValuesSet = descedingValuesMap.entrySet();
+		// Conditional to sort damage list in descending order.
 		if (damageCounterConfig.overlaySort())
 		{
-			Iterator i = finalSet.iterator();
+			Iterator i = descendingValuesSet.iterator();
 			while(i.hasNext())
 			{
 				Map.Entry m = (Map.Entry)i.next();
-				String value = (String)m.getValue(); //player
-				int key = (Integer)m.getKey(); //damage
-				String right = Integer.toString(key);
-				String left = value;
+				String left = (String)m.getValue();
+				String right = Integer.toString((Integer)m.getKey());
 			panelComponent.getChildren().add(
 				LineComponent.builder()
 					.left(left)
@@ -140,31 +137,6 @@ class DamageOverlay extends OverlayPanel
 			}
 		}
 
-//////////////////////
-		// for (DamageMember damageMember : dpsMembers.values())
-		// {
-		// 	String left = damageMember.getName();
-		// 	String right = showDamage ? QuantityFormatter.formatNumber(damageMember.getDamage()) : DPS_FORMAT.format(damageMember.getDps());
-		// 	maxWidth = Math.max(maxWidth, fontMetrics.stringWidth(left) + fontMetrics.stringWidth(right));
-		// 	if (damageCounterConfig.overlaySort())
-		// 	{
-
-		// 		panelComponent.getChildren().add(
-		// 			LineComponent.builder()
-		// 				.left(left)
-		// 				.right(right)
-		// 				.build());
-		// 	}
-		// 	else
-		// 	{
-		// 		panelComponent.getChildren().add(
-		// 			LineComponent.builder()
-		// 				.left(left)
-		// 				.right(right)
-		// 				.build());
-		// 	}
-		// }
-///////////////////////
 		panelComponent.setPreferredSize(new Dimension(maxWidth + PANEL_WIDTH_OFFSET, 0));
 
 		if (!inParty)
