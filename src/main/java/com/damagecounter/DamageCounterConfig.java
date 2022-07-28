@@ -47,6 +47,16 @@ public interface DamageCounterConfig extends Config
 		return false;
 	}
 
+    @ConfigItem(
+		keyName = "overlaySort",
+		name = "Sort Damage",
+		description = "Sorts damage list by player from highest damage to lowest"
+	)
+	default boolean overlaySort()
+	{
+		return false;
+	}
+
 	@ConfigItem(
 		keyName = "additionalNpcs",
 		name = "Additional NPCs",
