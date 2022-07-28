@@ -15,8 +15,12 @@ Useful when bossing with other players.
 - Option to automatically hide overlay when boss dies
 - Option to add your own NPCs to be tracked by Name
 - Shows other user's damage, if they are in a party with you
+- Option to sort the list of players in party by damage done in descending order
 
 ## Changelog
+
+###### v1.8 - 28-Jul-2022
+- Added feature to sort the list of players in party by damage done in descending order
 
 ###### v1.7 - 20-Jul-2022
 - Refactored the plugin to make it work with the new Party plugin
