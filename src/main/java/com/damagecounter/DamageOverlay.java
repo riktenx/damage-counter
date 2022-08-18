@@ -7,10 +7,10 @@
  * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
- *	list of conditions and the following disclaimer.
+ *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
- *	this list of conditions and the following disclaimer in the documentation
- *	and/or other materials provided with the distribution.
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -75,7 +75,7 @@ class DamageOverlay extends OverlayPanel
 		{
 			return null;
 		}
-		// List of members string dpsMembers
+
 		Map<String, DamageMember> dpsMembers = damageCounterPlugin.getMembers();
 
 		if (dpsMembers.isEmpty() || (damageCounterConfig.overlayAutoHide() && DamageMember.overlayHide))
@@ -96,30 +96,32 @@ class DamageOverlay extends OverlayPanel
 		int maxWidth = ComponentConstants.STANDARD_WIDTH;
 		FontMetrics fontMetrics = graphics.getFontMetrics();
 
-		// Logic for creating a sorted set of players and damage in party.
-		TreeMap<Integer,String> damageDoneSorted = new TreeMap<Integer,String>();
-		for (DamageMember damageMember : dpsMembers.values())
-		{
-			String left = damageMember.getName();
-			int right = showDamage ? Integer.parseInt(QuantityFormatter.formatNumber(damageMember.getDamage())) : Integer.parseInt(DPS_FORMAT.format(damageMember.getDps()));
-			damageDoneSorted.put(right,left);
-		}
-		NavigableMap descedingValuesMap = damageDoneSorted.descendingMap();
-		Set descendingValuesSet = descedingValuesMap.entrySet();
-		// Conditional to sort damage list in descending order.
 		if (damageCounterConfig.overlaySort())
 		{
+			TreeMap<Integer,String> damageDoneSorted = new TreeMap<Integer,String>();
+
+			for (DamageMember damageMember : dpsMembers.values())
+			{
+				String left = damageMember.getName();
+				int right = showDamage ? Integer.parseInt(QuantityFormatter.formatNumber(damageMember.getDamage())) : Integer.parseInt(DPS_FORMAT.format(damageMember.getDps()));
+				damageDoneSorted.put(right,left);
+			}
+
+			NavigableMap descedingValuesMap = damageDoneSorted.descendingMap();
+			Set descendingValuesSet = descedingValuesMap.entrySet();
 			Iterator i = descendingValuesSet.iterator();
+
 			while(i.hasNext())
 			{
 				Map.Entry m = (Map.Entry)i.next();
 				String left = (String)m.getValue();
 				String right = Integer.toString((Integer)m.getKey());
-			panelComponent.getChildren().add(
-				LineComponent.builder()
-					.left(left)
-					.right(right)
-					.build());
+				maxWidth = Math.max(maxWidth, fontMetrics.stringWidth(left) + fontMetrics.stringWidth(right));
+				panelComponent.getChildren().add(
+					LineComponent.builder()
+						.left(left)
+						.right(right)
+						.build());
 			}
 		}
 		else
@@ -130,10 +132,10 @@ class DamageOverlay extends OverlayPanel
 				String right = showDamage ? QuantityFormatter.formatNumber(damageMember.getDamage()) : DPS_FORMAT.format(damageMember.getDps());
 				maxWidth = Math.max(maxWidth, fontMetrics.stringWidth(left) + fontMetrics.stringWidth(right));
 				panelComponent.getChildren().add(
-				LineComponent.builder()
-					.left(left)
-					.right(right)
-					.build());
+					LineComponent.builder()
+						.left(left)
+						.right(right)
+						.build());
 			}
 		}
 

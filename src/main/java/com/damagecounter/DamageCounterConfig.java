@@ -42,20 +42,14 @@ public interface DamageCounterConfig extends Config
 		name = "Always hide overlay",
 		description = "Always hide the overlay"
 	)
-	default boolean overlayHide()
-	{
-		return false;
-	}
+	default boolean overlayHide() {	return false; }
 
 	@ConfigItem(
 		keyName = "overlaySort",
 		name = "Sort Damage",
 		description = "Sorts damage list by player from highest damage to lowest"
 	)
-	default boolean overlaySort()
-	{
-		return false;
-	}
+	default boolean overlaySort() {	return false; }
 
 	@ConfigItem(
 		keyName = "additionalNpcs",

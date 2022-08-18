@@ -7,6 +7,9 @@ Useful when bossing with other players.
 
 [If you encounter any bugs, please raise an issue by clicking here.](https://github.com/0anth/damage-counter/issues/new)
 
+## How to use
+If you only want to know how much damage you did and how long the kill took, then no configuration is required. If however, you want to see other player's damage, then you need to use the default RuneLite Party plugin to create a party and invite the other players.
+
 ## Features
 
 - Overlay with damage information (togglable)
@@ -20,7 +23,7 @@ Useful when bossing with other players.
 ## Changelog
 
 ###### v1.8 - 28-Jul-2022
-- Added feature to sort the list of players in party by damage done in descending order
+- Added config option to sort the list of players in party by damage done in descending order
 
 ###### v1.7 - 20-Jul-2022
 - Refactored the plugin to make it work with the new Party plugin
