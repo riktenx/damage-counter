@@ -22,6 +22,9 @@ If you only want to know how much damage you did and how long the kill took, the
 
 ## Changelog
 
+###### v1.8.1 - 14-Oct-2025
+- Compatibility update for RuneLite API changes
+
 ###### v1.8 - 28-Jul-2022
 - Added config option to sort the list of players in party by damage done in descending order
 
